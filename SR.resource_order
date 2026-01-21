@@ -42,6 +42,8 @@
     {"name":"obj_wall","order":1,"path":"objects/obj_wall/obj_wall.yy",},
     {"name":"Initiation_room","order":1,"path":"rooms/Initiation_room/Initiation_room.yy",},
     {"name":"fx_dashDust","order":1,"path":"sprites/fx_dashDust/fx_dashDust.yy",},
+    {"name":"fx_jumpDust","order":2,"path":"sprites/fx_jumpDust/fx_jumpDust.yy",},
+    {"name":"fx_wallSlide","order":3,"path":"sprites/fx_wallSlide/fx_wallSlide.yy",},
     {"name":"spr_airSlash","order":5,"path":"sprites/spr_airSlash/spr_airSlash.yy",},
     {"name":"spr_crouchSlash","order":4,"path":"sprites/spr_crouchSlash/spr_crouchSlash.yy",},
     {"name":"spr_crouchWalk","order":1,"path":"sprites/spr_crouchWalk/spr_crouchWalk.yy",},

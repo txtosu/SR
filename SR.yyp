@@ -64,6 +64,8 @@
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"general_functions","path":"scripts/general_functions/general_functions.yy",},},
     {"id":{"name":"fx_dashDust","path":"sprites/fx_dashDust/fx_dashDust.yy",},},
+    {"id":{"name":"fx_jumpDust","path":"sprites/fx_jumpDust/fx_jumpDust.yy",},},
+    {"id":{"name":"fx_wallSlide","path":"sprites/fx_wallSlide/fx_wallSlide.yy",},},
     {"id":{"name":"spr_airSlash","path":"sprites/spr_airSlash/spr_airSlash.yy",},},
     {"id":{"name":"spr_crouchSlash","path":"sprites/spr_crouchSlash/spr_crouchSlash.yy",},},
     {"id":{"name":"spr_crouchStill","path":"sprites/spr_crouchStill/spr_crouchStill.yy",},},
