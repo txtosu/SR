@@ -97,3 +97,4 @@ draw_text(16, 624, "Timer: " + string(afterimageTimer) + "/" + string(afterimage
 draw_text(16, 640, "Afterimages in room: " + string(instance_number(obj_afterimage)));
 draw_text(16, 656, "Player xspd: " + string(abs(xspd)));
 #endregion
+

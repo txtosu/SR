@@ -1722,3 +1722,139 @@ else
     afterimageTimer = 0;
 }
 #endregion
+
+#region FX SPAWNING SYSTEM
+
+// === TRACK CONDITIONS ===
+var isWallSliding = (airState == AirState.A_WALLCLING && wallStickTimer <= 0);
+
+// === DASH DUST ===
+if (isDashing && dashLockTimer == dashLockFrames - 1)  // First frame of dash
+{
+    var _fx = instance_create_depth(x, y, depth + 1, obj_fxDashDust);
+    _fx.owner = id;
+    _fx.initializeFX();
+}
+
+// === JUMP DUST (SIMPLE VERSION) ===
+// Track previous jump count
+if (!variable_instance_exists(id, "prevJumpCount"))
+{
+    prevJumpCount = 0;
+}
+
+// Spawn dust when first jump occurs
+if (jumpCount > prevJumpCount && jumpCount == 1)  // Only first jump
+{
+    var _fx = instance_create_depth(x, y, depth + 1, obj_fxJumpDust);
+    _fx.owner = id;
+    _fx.initializeFX();
+}
+
+prevJumpCount = jumpCount;
+
+// === WALL JUMP DUST ===
+// Track previous air state
+if (!variable_instance_exists(id, "prevAirStateWallJump"))
+{
+    prevAirStateWallJump = AirState.A_NONE;
+}
+
+// Spawn dust when transitioning FROM wall cling TO wall jump
+if (prevAirStateWallJump == AirState.A_WALLCLING && airState == AirState.A_WALLJUMP)
+{
+    var _fx = instance_create_depth(x, y, depth + 1, obj_fxWallJumpDust);
+    _fx.owner = id;
+    
+    // IMPORTANT: Store the wall direction BEFORE initializing
+    // (because wallDir might change after the jump)
+    _fx.fxDirection = prevWallDir;  // Use the wall we jumped FROM
+    
+    _fx.initializeFX();
+}
+
+prevAirStateWallJump = airState;
+// === DOUBLE JUMP DUST ===
+// Track previous jump count for double jump
+if (!variable_instance_exists(id, "prevJumpCountDouble"))
+{
+    prevJumpCountDouble = 0;
+}
+
+// Spawn dust when second jump occurs (double jump)
+if (jumpCount > prevJumpCountDouble && jumpCount == 2)  // Only second jump
+{
+    var _fx = instance_create_depth(x, y, depth - 1, obj_fxDoubleJump);
+    _fx.owner = id;
+    _fx.initializeFX();
+}
+
+prevJumpCountDouble = jumpCount;
+
+// === LANDING DUST ===
+// Track previous ground state
+if (!variable_instance_exists(id, "prevOnGround"))
+{
+    prevOnGround = false;
+}
+
+// Spawn dust when landing (transition from air to ground)
+if (onGround && !prevOnGround)
+{
+    var _fx = instance_create_depth(x, y, depth + 1, obj_fxLandingDust);
+    _fx.owner = id;
+    _fx.initializeFX();
+}
+
+prevOnGround = onGround;
+
+// === RUNNING DUST ===
+// Track timer for periodic spawning
+if (!variable_instance_exists(id, "runDustTimer"))
+{
+    runDustTimer = 0;
+}
+
+// Spawn dust periodically while running on ground
+if (onGround && groundState == GroundState.G_RUN && abs(xspd) > 2)
+{
+    runDustTimer++;
+    
+    // Spawn every 8 frames (adjust for more/less frequent dust)
+    if (runDustTimer >= 8)
+    {
+        var _fx = instance_create_depth(x, y, depth + 1, obj_fxRunDust);
+        _fx.owner = id;
+        _fx.initializeFX();
+        
+        runDustTimer = 0;  // Reset timer
+    }
+}
+else
+{
+    // Reset timer when not running
+    runDustTimer = 0;
+}
+
+// === WALL SLIDE FX ===
+// Track if wall slide FX exists
+if (!variable_instance_exists(id, "myWallSlideFX"))
+{
+    myWallSlideFX = noone;
+}
+
+// Spawn wall slide FX when entering wall slide
+if (isWallSliding && !instance_exists(myWallSlideFX))
+{
+    myWallSlideFX = instance_create_depth(x, y, depth - 1, obj_fxWallSlide);
+    myWallSlideFX.owner = id;
+    myWallSlideFX.initializeFX();
+}
+
+// Clean up reference if FX is destroyed
+if (!instance_exists(myWallSlideFX))
+{
+    myWallSlideFX = noone;
+}
+
+#endregion

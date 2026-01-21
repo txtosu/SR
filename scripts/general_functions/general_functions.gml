@@ -66,4 +66,51 @@ function getControls()
 		jumpKeyBuffered = 0;
 	}
 }
-	
+// === FX: GET SPAWN POINT ===
+// Returns [x, y] array for FX spawn position
+function getSpawnPoint(_owner, _pointType, _offsetX, _offsetY, _direction)
+{
+    var _x = _owner.x;
+    var _y = _owner.y;
+    
+    switch (_pointType)
+    {
+        case "center":
+            // Already at owner.x, owner.y
+            break;
+            
+        case "feet":
+            _y = _owner.bbox_bottom;
+            break;
+            
+        case "bbox_top":
+            _y = _owner.bbox_top;
+            break;
+            
+        case "bbox_bottom":
+            _y = _owner.bbox_bottom;
+            break;
+            
+        case "wallside":
+            // Offset to wall side (uses wallDir or face)
+            var _wallOffset = 0;
+            if (variable_instance_exists(_owner, "wallDir"))
+            {
+                _wallOffset = _owner.wallDir * abs(_offsetX);
+            }
+            else if (variable_instance_exists(_owner, "face"))
+            {
+                _wallOffset = _owner.face * abs(_offsetX);
+            }
+            
+            _x += _wallOffset;
+            _offsetX = 0;  // Already applied
+            break;
+    }
+    
+    // Apply directional offset
+    _x += (_offsetX * _direction);
+    _y += _offsetY;
+    
+    return [_x, _y];
+}
