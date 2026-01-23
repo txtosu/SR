@@ -15,8 +15,9 @@ draw_text(16, 48, "Substate: " + _subName);
 draw_text(16, 80, "=== GLOBAL STATES ===");
 draw_text(16, 96, "Attacking: " + string(isAttacking));
 draw_text(16, 112, "Dashing: " + string(isDashing));
-draw_text(16, 128, "Climbing: " + string(isClimbing));
-draw_text(16, 144, "Grappling: " + string(grappling));
+draw_text(16, 128, "BackStepping: " + string(isBackStepping));  // NEW
+draw_text(16, 144, "Climbing: " + string(isClimbing));
+draw_text(16, 160, "Grappling: " + string(grappling));
 
 // Attack details
 if (isAttacking)

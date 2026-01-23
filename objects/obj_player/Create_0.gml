@@ -210,8 +210,8 @@
 	prevWallDir = 0;
 	
 	// Wall jump launch speeds
-	wallJumpXSpeed = 4.5;  // Horizontal launch away from wall
-	wallJumpYSpeed = -3.0; // Vertical launch (negative = up)
+	wallJumpXSpeed = 4.5;  // Horizontal launch away from wall 4.5
+	wallJumpYSpeed = -6.0; // Vertical launch (negative = up) -6
 	
 	// Wall jump input lock duration
 	wallJumpLockFrames = 12; // How long inputs are locked after wall jump
@@ -242,6 +242,12 @@
 	isDashing = false;        // Are we currently dashing?
 	dashDir = 1;              // Direction of current dash
 	dashWasAir = false;       // Was this an air dash?
+	
+	backStepSpr = spr_backStep;
+	isBackStepping = false;    // Are we currently backstepping?
+	backStepSpeed = -4.0;      // Backstep speed (negative = backward)
+	backStepLockFrames = 12;   // How long backstep lasts
+	backStepLockTimer = 0;     // Current backstep timer
 #endregion
 
 #region Grapple System

@@ -1,0 +1,26 @@
+{
+  "$GMSound":"v2",
+  "%Name":"BGM_Battle_03",
+  "audioGroupId":{
+    "name":"audiogroup_default",
+    "path":"audiogroups/audiogroup_default",
+  },
+  "bitDepth":1,
+  "channelFormat":0,
+  "compression":0,
+  "compressionQuality":4,
+  "conversionMode":0,
+  "duration":106.66419,
+  "exportDir":"",
+  "name":"BGM_Battle_03",
+  "parent":{
+    "name":"music",
+    "path":"folders/music.yy",
+  },
+  "preload":false,
+  "resourceType":"GMSound",
+  "resourceVersion":"2.0",
+  "sampleRate":44100,
+  "soundFile":"BGM_Battle_03.ogg",
+  "volume":1.0,
+}

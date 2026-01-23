@@ -14,9 +14,35 @@ if (!_grappleHeld && grappleKeyPrev) {
 grappleKeyPrev    = _grappleHeld;
 grappleKeyPressed = _grapplePressed;
 
-#region Dash Input (NOT LOGIC)
-// DASH INPUT (Global State Entry)
-if (!isDashing && dashCooldownTimer <= 0 && dashKey && (leftKey || rightKey) && dashCharges > 0)
+#region Dash/Backstep Input (NOT LOGIC)
+// Get movement input
+var _moveInput = (leftKey || rightKey);
+
+// BACKSTEP INPUT (Ground only, no directional input, has dash charges)
+if (!isDashing && !isBackStepping && onGround && dashCooldownTimer <= 0 
+    && dashKey && !_moveInput && dashCharges > 0)
+{
+    // Enter backstep state
+    isBackStepping = true;
+    
+    // Consume a dash charge
+    dashCharges--;
+    
+    // Set backstep velocity (moves backward from facing direction)
+    xspd = face * backStepSpeed;  // Negative speed = backward
+    yspd = 0;
+    
+    // Lock inputs
+    inputLockMove = backStepLockFrames;
+    inputLockFace = backStepLockFrames;
+    backStepLockTimer = backStepLockFrames;
+    
+    // Lock Y axis during backstep
+    lockY = true;
+}
+// DASH INPUT (Forward dash with directional input)
+else if (!isDashing && !isBackStepping && dashCooldownTimer <= 0 
+         && dashKey && _moveInput && dashCharges > 0)
 {
     // Enter dash state
     isDashing = true;
@@ -25,6 +51,7 @@ if (!isDashing && dashCooldownTimer <= 0 && dashKey && (leftKey || rightKey) && 
     dashCharges--;
     
     // Determine dash direction (use input direction, or face if holding both)
+    moveDir = rightKey - leftKey;
     dashDir = (moveDir != 0) ? moveDir : face;
     face = dashDir;
     
@@ -388,6 +415,29 @@ if (isDashing)
         
         // If we were air dashing, let gravity take over
         // (Ground dash will just continue with momentum + friction)
+    }
+}
+#endregion
+
+#region Backstep State Logic
+// Handle backstep state (runs parallel to parent states)
+if (isBackStepping)
+{
+    // Keep Y locked (no gravity during backstep)
+    lockY = true;
+    yspd = 0;
+    
+    // Count down backstep timer
+    if (backStepLockTimer > 0)
+    {
+        backStepLockTimer--;
+    }
+    else
+    {
+        // Backstep timer expired - exit backstep state
+        isBackStepping = false;
+        lockY = false;
+        dashCooldownTimer = dashCooldownFrames;  // Share cooldown with dash
     }
 }
 #endregion
@@ -1441,34 +1491,32 @@ if (lockY) {
 
 #region Sprite and Animation Management
 
-// Detect state changes
-var _stateChanged = false;
-if (parentState != prevParentState)
-{
-    _stateChanged = true;
-}
-else if (parentState == ParentState.GROUND && groundState != prevGroundState)
-{
-    _stateChanged = true;
-}
-else if (parentState == ParentState.AIR && airState != prevAirState)
-{
-    _stateChanged = true;
-}
+	// Detect state changes
+	var _stateChanged = false;
+	if (parentState != prevParentState)
+	{
+	    _stateChanged = true;
+	}
+	else if (parentState == ParentState.GROUND && groundState != prevGroundState)
+	{
+	    _stateChanged = true;
+	}
+	else if (parentState == ParentState.AIR && airState != prevAirState)
+	{
+	    _stateChanged = true;
+	}
 
-// Release frame hold if state changed (but not during dash or climbing)
-if (_stateChanged && animHoldUntilStateChange && !isDashing && !isClimbing)
-{
-    animFrameHold = false;
-    animHoldFrame = 0;
-    animHoldUntilStateChange = false;
-}
-
+	// Release frame hold if state changed (but not during dash or climbing)
+	if (_stateChanged && animHoldUntilStateChange && !isDashing && !isClimbing)
+	{
+	    animFrameHold = false;
+	    animHoldFrame = 0;
+	    animHoldUntilStateChange = false;
+	}
 // Set sprites and animation rules based on state
 var _newSprite = sprite_index;
 var _resetAnim = false;
 
-// GLOBAL STATE: Attack has highest priority
 // GLOBAL STATE: Attack has highest priority
 if (isAttacking)
 {
@@ -1486,11 +1534,25 @@ if (isAttacking)
         _newSprite = attackAirSlashSpr;
     }
 }
+// GLOBAL STATE: Backstep (NEW - priority over dash)
+else if (isBackStepping)
+{
+    _newSprite = backStepSpr;
+    
+    // FRAME HOLD: Hold frame 1 during backstep
+    if (!animFrameHold || sprite_index != backStepSpr)
+    {
+        animFrameHold = true;
+        animHoldFrame = 1;
+        animHoldUntilStateChange = false;
+    }
+}
 // GLOBAL STATE: Dash
 else if (isDashing)
 {
     _newSprite = dashStartSpr;
-    // FRAME HOLD: Hold frame 1 (second frame) during dash
+    
+    // FRAME HOLD: Hold frame 1 during dash
     if (!animFrameHold || sprite_index != dashStartSpr)
     {
         animFrameHold = true;
@@ -1630,6 +1692,10 @@ if (!isDashing && sprite_index == dashStartSpr)
 {
     animFrameHold = false;
 }
+if (!isBackStepping && sprite_index == backStepSpr)  
+{
+    animFrameHold = false;
+}
 
 // Store current state for next frame's comparison
 prevParentState = parentState;
@@ -1669,6 +1735,13 @@ if (isDashing)
 {
     afterimageEnabled = true;
     afterimageColor = c_aqua;  // Cyan dash trails
+}
+
+// Trigger 2: Backstepping (NEW)
+if (isBackStepping)
+{
+    afterimageEnabled = true;
+    afterimageColor = c_orange;  // Orange backstep trails
 }
 
 // Trigger 2: Wall jumping
@@ -1732,6 +1805,14 @@ var isWallSliding = (airState == AirState.A_WALLCLING && wallStickTimer <= 0);
 if (isDashing && dashLockTimer == dashLockFrames - 1)  // First frame of dash
 {
     var _fx = instance_create_depth(x, y, depth + 1, obj_fxDashDust);
+    _fx.owner = id;
+    _fx.initializeFX();
+}
+
+// === BACKSTEP DUST ===
+if (isBackStepping && backStepLockTimer == backStepLockFrames - 1)  // First frame of backstep
+{
+    var _fx = instance_create_depth(x, y, depth + 1, obj_fxBackStepDust);
     _fx.owner = id;
     _fx.initializeFX();
 }
