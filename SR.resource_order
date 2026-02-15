@@ -74,6 +74,8 @@
     {"name":"spr_idle","order":2,"path":"sprites/spr_idle/spr_idle.yy",},
     {"name":"spr_ladder","order":11,"path":"sprites/spr_ladder/spr_ladder.yy",},
     {"name":"spr_ladderIdle","order":2,"path":"sprites/spr_ladderIdle/spr_ladderIdle.yy",},
+    {"name":"spr_ledgeGrab","order":8,"path":"sprites/spr_ledgeGrab/spr_ledgeGrab.yy",},
+    {"name":"spr_ledgeHang","order":9,"path":"sprites/spr_ledgeHang/spr_ledgeHang.yy",},
     {"name":"spr_movePlat","order":9,"path":"sprites/spr_movePlat/spr_movePlat.yy",},
     {"name":"spr_roll","order":2,"path":"sprites/spr_roll/spr_roll.yy",},
     {"name":"spr_run","order":4,"path":"sprites/spr_run/spr_run.yy",},

@@ -142,16 +142,17 @@
 	}
 
 	function getAirStateName()
-	{
-	    switch (airState)
-	    {
-	        case AirState.A_NONE:      return "NONE";
-	        case AirState.A_FALL:      return "FALL";
-	        case AirState.A_WALLCLING: return "WALLCLING";
-	        case AirState.A_WALLJUMP:  return "WALLJUMP";  // NEW
-	    }
-	    return "UNKNOWN";
-	}
+{
+    switch (airState)
+    {
+        case AirState.A_NONE:      return "NONE";
+        case AirState.A_FALL:      return "FALL";
+        case AirState.A_WALLCLING: return "WALLCLING";
+        case AirState.A_WALLJUMP:  return "WALLJUMP";
+        case AirState.A_LEDGEGRAB: return "LEDGEGRAB"; 
+    }
+    return "UNKNOWN";
+}
 
 
 	// Parent states
@@ -174,7 +175,8 @@
 	    A_NONE      = 0, // generic air (going up, neutral)
 	    A_FALL      = 1,
 	    A_WALLCLING = 2,
-	    A_WALLJUMP  = 3  // NEW: Wall jump state
+	    A_WALLJUMP  = 3,  
+		A_LEDGEGRAB = 4 
 	}
 
 	// Global state 
@@ -281,6 +283,7 @@
 #endregion
 
 #region Climbing System
+
 	// Climbing state
 	isClimbing = false;
 	
@@ -290,6 +293,126 @@
 	
 	// Ladder locking
 	ladderX = 0;  // X position to lock to while climbing
+#endregion
+
+#region Ledge Grab System
+    // Ledge grab detection zone
+    ledgeGrabHeight = 16;      // How far down from wall top
+    ledgeGrabWidth = 8;        // How far out from wall
+    
+    // Ledge grab state
+    isLedgeGrabbing = false;
+    ledgeGrabWall = noone;     // Reference to wall we're grabbing
+    ledgeGrabX = 0;            // X position to lock to
+    ledgeGrabY = 0;            // Y position to lock to
+    ledgeGrabDir = 0;          // Direction of wall (-1 left, 1 right)
+    
+    // Ledge grab behavior
+    ledgeGrabMaxSpeed = 3.5;   // Max fall speed to allow grab
+    ledgeClimbUpSpeed = -2.5;  // Speed when climbing up
+    ledgeClimbUpDist = 20;     // How far to move up when climbing
+    
+    // Ceiling check
+    ledgeCeilingCheckHeight = 24;  // How high to check for ceiling
+    
+    // Cooldown (prevent re-grab)
+    ledgeGrabCooldown = 10;    // Frames before can grab again
+    ledgeGrabCooldownTimer = 0;
+    lastLedgeGrabbed = noone;  // Last wall grabbed
+    
+    // Animation tracking
+    ledgeGrabAnimFinished = false;  // Has initial grab animation finished?
+    
+    // Sprites
+    ledgeGrabSpr = spr_ledgeGrab;   // Initial grab animation
+    ledgeHangSpr = spr_ledgeHang;   // Looping hang animation
+	debug_ledge_show = true;  // ADD THIS LINE!
+
+	
+	#region Ledge Grab Functions
+	    // Check if there's a ledge grab zone collision
+	    function checkLedgeGrabZone()
+	    {
+	        // Only check when falling in air
+	        if (onGround || yspd <= 0) return noone;
+        
+	        // Don't check if on cooldown
+	        if (ledgeGrabCooldownTimer > 0) return noone;
+        
+	        // Check for wall collision on sides
+	        var _touchLeft  = place_meeting(x - 1, y, obj_wall);
+	        var _touchRight = place_meeting(x + 1, y, obj_wall);
+        
+	        if (!_touchLeft && !_touchRight) return noone;
+        
+	        // Determine wall direction
+	        var _wallDir = 0;
+	        if (_touchLeft)  _wallDir = -1;
+	        if (_touchRight) _wallDir = 1;
+        
+	        // ONLY GRAB IF MOVING TOWARD WALL
+	        var _inputDir = rightKey - leftKey;
+	        if (_inputDir != _wallDir) return noone;  // Not pressing toward wall
+        
+	        // Get the wall instance
+	        var _wallInst = _wallDir < 0 
+	            ? instance_place(x - 1, y, obj_wall)
+	            : instance_place(x + 1, y, obj_wall);
+        
+	        if (!instance_exists(_wallInst)) return noone;
+        
+	        // Don't grab same ledge twice
+	        if (_wallInst == lastLedgeGrabbed) return noone;
+        
+	        // Get wall's top edge
+	        var _wallTop = _wallInst.bbox_top;
+        
+	        // Define ledge grab zone (vertical strip along wall side, near top)
+	        var _zoneTop = _wallTop;
+	        var _zoneBottom = _wallTop + ledgeGrabHeight;
+        
+	        // Define horizontal bounds of zone (extends outward from wall)
+	        var _zoneLeft, _zoneRight;
+        
+	        if (_wallDir < 0)  // Wall on left
+	        {
+	            _zoneRight = _wallInst.bbox_left;
+	            _zoneLeft = _zoneRight - ledgeGrabWidth;
+	        }
+	        else  // Wall on right
+	        {
+	            _zoneLeft = _wallInst.bbox_right;
+	            _zoneRight = _zoneLeft + ledgeGrabWidth;
+	        }
+        
+	        // Check if player's bounding box overlaps with zone
+	        if (bbox_right < _zoneLeft || bbox_left > _zoneRight)
+	        {
+	            return noone;  // Not horizontally in zone
+	        }
+        
+	        // Check if player's grab point is in vertical zone
+	        var _playerCenterY = (bbox_top + bbox_bottom) / 2;
+        
+	        if (_playerCenterY < _zoneTop || _playerCenterY > _zoneBottom)
+	        {
+	            return noone;  // Not vertically in zone
+	        }
+        
+	        // Check for ceiling above ledge
+	        var _ceilingCheckX = _wallInst.x;
+	        var _ceilingCheckY = _wallTop - ledgeCeilingCheckHeight;
+        
+	        if (place_meeting(_ceilingCheckX, _ceilingCheckY, obj_wall))
+	        {
+	            return noone;  // Ceiling blocked
+	        }
+        
+	        // All checks passed - return wall instance
+	        return _wallInst;
+	    }
+	#endregion
+
 #endregion
 
 #region SPRITES
@@ -412,6 +535,8 @@
 	    return best;
 	}
 #endregion
+
+
 
 #region HURTBOX
 	// Create hurtbox as child object

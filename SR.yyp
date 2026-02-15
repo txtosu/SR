@@ -102,6 +102,8 @@
     {"id":{"name":"spr_ladder","path":"sprites/spr_ladder/spr_ladder.yy",},},
     {"id":{"name":"spr_ladderClimb","path":"sprites/spr_ladderClimb/spr_ladderClimb.yy",},},
     {"id":{"name":"spr_ladderIdle","path":"sprites/spr_ladderIdle/spr_ladderIdle.yy",},},
+    {"id":{"name":"spr_ledgeGrab","path":"sprites/spr_ledgeGrab/spr_ledgeGrab.yy",},},
+    {"id":{"name":"spr_ledgeHang","path":"sprites/spr_ledgeHang/spr_ledgeHang.yy",},},
     {"id":{"name":"spr_movePlat","path":"sprites/spr_movePlat/spr_movePlat.yy",},},
     {"id":{"name":"spr_player","path":"sprites/spr_player/spr_player.yy",},},
     {"id":{"name":"spr_roll","path":"sprites/spr_roll/spr_roll.yy",},},

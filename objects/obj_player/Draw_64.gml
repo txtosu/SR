@@ -18,6 +18,7 @@ draw_text(16, 112, "Dashing: " + string(isDashing));
 draw_text(16, 128, "BackStepping: " + string(isBackStepping));  // NEW
 draw_text(16, 144, "Climbing: " + string(isClimbing));
 draw_text(16, 160, "Grappling: " + string(grappling));
+draw_text(100, 176, "LedgeGrab: " + string(isLedgeGrabbing));
 
 // Attack details
 if (isAttacking)
